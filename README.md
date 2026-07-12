@@ -1,7 +1,7 @@
 # hwn10pro-eink
 
 > **⚠️ AI-generated.** The overwhelming majority of the code and documentation in
-> this repository was written by an LLM (Claude). Human involvement was minimal —
+> this repository was written by an LLM (GLM-5.2). Human involvement was minimal —
 > limited to on-device testing, direction-setting, and review. Treat it accordingly:
 > verify before relying on it.
 
