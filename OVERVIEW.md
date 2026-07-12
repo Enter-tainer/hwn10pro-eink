@@ -290,7 +290,7 @@ hweink (Rust crate, no_std-able core + std io)
 | `full` | `sys.ebook.one_full_mode_timeline` | ✅ 已实现(counter 递增) |
 | `main` | 主 buffer + SET_FB_BLANK | ⏳ C 验证上屏;Rust 实现同逻辑,待跑(需愿重启时验) |
 | `draw_batch` | 批量写 Draw scope | ✅ 贝塞尔 + 点阵一次刷出,已验证 |
-| `pen_iter`/`pen_async` | 笔异步(迭代器 / raw fd) | ⏳ 编译通过,待设备验证 |
+| `pen_iter`/`pen_async` | 笔异步(迭代器 / raw fd) | ✅ 已验证,坐标 + 压感流正常 |
 
 ### 6.4 设计决策
 

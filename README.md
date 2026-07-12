@@ -9,7 +9,7 @@ A libremarkable-style e-ink library for the **Hanwang N10 Pro III** (Rockchip RK
 
 `hweink` talks to the on-device Rockchip **EBC** (E-Book Controller) driver at `/dev/ebc` and gives you a portrait-coordinate drawing API, refresh-waveform selection, and pen/stylus input — so you can build note-taking, reading, and kiosk apps that fit the e-ink screen instead of fighting it.
 
-> **Status:** experimental. The OSD overlay, system-mode, and pen paths are verified on-device; the main-buffer takeover and batch-draw paths compile but are still being validated. See `OVERVIEW.md` for the full ABI notes and verification matrix.
+> **Status:** experimental. The OSD overlay, system-mode, pen input (including the async APIs), and batch-draw paths are verified on-device; the main-buffer takeover path compiles but is still being validated. See `OVERVIEW.md` for the full ABI notes and verification matrix.
 
 ## Features
 
