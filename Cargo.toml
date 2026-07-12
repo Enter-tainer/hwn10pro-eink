@@ -1,0 +1,6 @@
+[workspace]
+members = ["libhweink", "hweink-demo"]
+resolver = "2"
+
+[profile.release]
+opt-level = 2

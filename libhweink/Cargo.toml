@@ -1,0 +1,20 @@
+[package]
+name = "hweink"
+version = "0.1.0"
+edition = "2021"
+description = "libremarkable-like e-ink library for the Hanwang N10 Pro III (Rockchip RK3576 EBC)"
+license = "MIT"
+# repository = "https://github.com/<you>/hwn10pro-eink"  # set before publishing
+
+[lib]
+name = "hweink"
+# rlib for Rust consumers (the demo). cdylib/staticlib can be re-enabled for
+# C/JNI consumers once the NDK .cmd version-script issue is worked around.
+crate-type = ["rlib"]
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+libc = { version = "0.2", default-features = false }

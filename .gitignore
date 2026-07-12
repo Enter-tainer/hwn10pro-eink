@@ -1,0 +1,30 @@
+# ---- Rust build artifacts ----
+target/
+**/*.rs.bk
+
+# ---- Device-side exploration artifacts (kept locally, not for publication) ----
+# These directories hold pulled APKs, decompiled system apps, pulled .so libs,
+# cloned kernel trees, and one-off C/PoC scratch from early bring-up. The Rust
+# workspace under libhweink/ + hweink-demo/ is the clean, publishable result.
+decompiled/
+extracted/
+ref/
+poc/
+docs/
+decompile_apks.sh
+wf_eink.js
+wf_fill.js
+
+# ---- Editor / OS ----
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---- Local notes / scratch ----
+*.txt.bak
+/hweink-demo/probe.txt
+/hweink-demo/smoke.txt
+

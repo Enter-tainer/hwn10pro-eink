@@ -1,0 +1,18 @@
+# Cargo config for cross-compiling to Android aarch64.
+#
+# hweink targets the on-device EBC driver (`/dev/ebc`), so it only builds for
+# `aarch64-linux-android`. You need NDK r25+ and the aarch64 clang wrapper.
+#
+# Set the linker via environment variable (keeps this file machine-agnostic):
+#   # Windows PowerShell:
+#   $env:CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER = "C:\path\to\ndk\toolchains\llvm\prebuilt\windows-x86_64\bin\aarch64-linux-android31-clang.cmd"
+#   # Linux/macOS:
+#   export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=/path/to/ndk/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android31-clang
+#
+# The clang wrapper lives at:
+#   <ndk>/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android31-clang(.cmd on Windows)
+#
+# Alternatively, uncomment and edit the two lines below to hardcode your path:
+#
+# [target.aarch64-linux-android]
+# linker = "/path/to/ndk/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android31-clang"
