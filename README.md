@@ -1,5 +1,10 @@
 # hwn10pro-eink
 
+> **⚠️ AI-generated.** The overwhelming majority of the code and documentation in
+> this repository was written by an LLM (Claude). Human involvement was minimal —
+> limited to on-device testing, direction-setting, and review. Treat it accordingly:
+> verify before relying on it.
+
 A libremarkable-style e-ink library for the **Hanwang N10 Pro III** (Rockchip RK3576, Android 14, kernel 6.1.75), implemented in Rust.
 
 `hweink` talks to the on-device Rockchip **EBC** (E-Book Controller) driver at `/dev/ebc` and gives you a portrait-coordinate drawing API, refresh-waveform selection, and pen/stylus input — so you can build note-taking, reading, and kiosk apps that fit the e-ink screen instead of fighting it.
