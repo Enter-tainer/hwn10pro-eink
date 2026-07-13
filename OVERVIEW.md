@@ -206,9 +206,13 @@ ioctl(0x7014, NULL)               // SET_FB_UNBLANK 恢复
 
 内核 `buf_mode` 由 `0x7001/0x7007` 的 `epd_mode` 字段 per-buffer 设。`sys.eink.mode` 由 **HWC HAL** 监听并应用到主通路 auto-refresh。`hweink::sysprop::set_system_mode` 写这个属性,影响的是 HWC 主通路波形;OSD overlay 的波形由 `SEND_OSD_BUFFER` 的 `epd_mode` 决定(固定 `EPD_OVERLAY`)。
 
-### 4.4 ⚠️ 全屏刷新(counter 方式)的注意点
+### 4.4 全屏刷新:广播是正路,counter 是退化
 
-`sys.ebook.one_full_mode_timeline` 是"标记下次刷新用全波形"的请求,本身不触发刷新——得配合一次实际刷新(翻页/局部刷/屏幕变化)才生效。且平台 `sendOneFullFrame()` 有 800ms 节流,800ms 内重复调用会被丢弃。`hweink::request_one_full_frame()` 写这个 counter;若要可靠的"立刻全刷",更直接的是主通路 `SEND_BUFFER` with `epd_mode=FULL_GC16`(需 `SET_FB_BLANK` 接管)。
+平台"全刷"的正规触发方式是发广播 `hanvon.intent.fullrefrsh.user`——SystemUI 下拉"刷新"磁贴(`RefreshTile`)、物理自定义键(`PhoneWindowManager`)、各 app 自刷新都发这个。它由系统多个组件响应,效果等同按一下官方刷新键。任何 app 或 `adb shell` 都能发(`am broadcast -a hanvon.intent.fullrefrsh.user`,无权限);`.system` 变体带权限,仅系统可发。
+
+`hweink` 把 action 字符串暴露为 `sysprop::ACTION_FULL_REFRESH_USER` 常量,**不内置发送函数**——因为发广播是 Java 操作(`Context.sendBroadcast`),Java 调用方直接写 `context.sendBroadcast(new Intent(ACTION_FULL_REFRESH_USER))` 即可,不需要 Rust 库代劳。`hweink-demo` 是裸 native 进程无 Java Context,演示时 fork `am`(一次性 CLI 可接受;**app 内嵌千万别这么干**,fork+ART 启动几十 ms 且可能被 SELinux 拦)。
+
+`sys.ebook.one_full_mode_timeline` 是另一条路(平台 `EinkManager.sendOneFullFrame()` 写的 counter),但它只是"标记下次刷新用全波形",得配合一次实际刷新才生效,且有 800ms 节流——不如广播直接。`hweink` 不再封装它。
 
 ---
 
@@ -276,7 +280,7 @@ hweink (Rust crate, no_std-able core + std io)
 - `surf.draw()` → `Draw` guard(shadow buffer + 批量写 + 脏矩形合并,drop 时一次 flush)
 - `surf.refresh(ScreenRect, Option<Mode>)` / `refresh_full(Mode)` — 推帧,支持局部脏矩形 + 任选 waveform
 - `ebc.set_full_mode_num(n)` / `set_diff_percent(pct)` / `set_wait_new_buf_time(ms)`
-- `sysprop::set_system_mode(Mode)` / `get_system_mode()` / `request_one_full_frame()`
+- `sysprop::set_system_mode(Mode)` / `get_system_mode()` / `ACTION_FULL_REFRESH_USER`(全刷广播 action 常量,Java 侧 `sendBroadcast` 用)
 - `Pen::open()` → `pen.read(timeout)` / `pen.events()` 迭代器 / `pen.fd()` + `set_nonblocking()` + `poll_once()`(异步层3)
 
 ### 6.3 设备验证状态(`hweink-demo`)
@@ -287,7 +291,7 @@ hweink (Rust crate, no_std-able core + std io)
 | `osd` | OSD overlay 直绘 | ✅ compass 上屏,用户确认看到 |
 | `mode`/`mode?` | sysprop `sys.eink.mode` | ✅ 符号名/数字两种入参,设/读一致 |
 | `pen` | `/dev/input/event2` | ✅ 用户实测可用 |
-| `full` | `sys.ebook.one_full_mode_timeline` | ✅ 已实现(counter 递增) |
+| `full` | `am broadcast hanvon.intent.fullrefrsh.user` | ✅ 广播触发全刷(官方刷新键同款) |
 | `main` | 主 buffer + SET_FB_BLANK | ⏳ C 验证上屏;Rust 实现同逻辑,待跑(需愿重启时验) |
 | `draw_batch` | 批量写 Draw scope | ✅ 贝塞尔 + 点阵一次刷出,已验证 |
 | `pen_iter`/`pen_async` | 笔异步(迭代器 / raw fd) | ✅ 已验证,坐标 + 压感流正常 |

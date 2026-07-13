@@ -26,16 +26,22 @@ pub fn get_system_mode() -> String {
     get_property("sys.eink.mode", "9")
 }
 
-/// Increment `sys.ebook.one_full_mode_timeline` to force one full refresh (clears
-/// ghosting, e.g. after an A2 scroll burst). Mirrors `EinkManager.sendOneFullFrame()`.
-pub fn request_one_full_frame() {
-    // The property is a monotonic counter; the HWC triggers a full frame on each change.
-    // We just need a value different from the current one — toggling between "1" and "2"
-    // is sufficient (the framework itself uses an incrementing int with 800ms throttle).
-    let cur = get_property("sys.ebook.one_full_mode_timeline", "0");
-    let n: i64 = cur.trim().parse::<i64>().unwrap_or(0).wrapping_add(1);
-    set_property("sys.ebook.one_full_mode_timeline", &n.to_string());
-}
+/// Broadcast action the platform uses to request a full screen refresh — the same
+/// event the SystemUI quick-settings "Refresh" tile, the physical custom key, and
+/// apps' self-refresh emit. Sendable by any app or `adb shell` with no special
+/// permission (unlike the `.system` variant, which is restricted to the system).
+///
+/// This is a plain string constant, NOT a function. Sending a broadcast is a Java
+/// operation (`Context.sendBroadcast`), and a Java caller doesn't need a Rust library
+/// to do it — they just write:
+/// ```java
+/// context.sendBroadcast(new Intent("hanvon.intent.fullrefrsh.user"));
+/// ```
+/// We expose the constant only so the canonical action string lives in one place.
+///
+/// From `adb shell` / a standalone native process with no Java `Context`:
+/// `am broadcast -a hanvon.intent.fullrefrsh.user`.
+pub const ACTION_FULL_REFRESH_USER: &str = "hanvon.intent.fullrefrsh.user";
 
 /// Full-refresh cadence: force one full GC16 every `n` partials (0 = disabled).
 /// Maps to `persist.vendor.ebook.fullmode_cnt` (Java: `EinkManager.setFullModeCnt`).

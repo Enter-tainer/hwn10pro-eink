@@ -19,8 +19,10 @@
 //! use hweink::{sysprop, mode::Mode};
 //! // user started scrolling a list → fast mode
 //! sysprop::set_system_mode(Mode::A2Dither);
-//! // scroll ended → clear ghosting and return to high-fidelity
-//! sysprop::request_one_full_frame();
+//! // scroll ended → clear ghosting and return to high-fidelity.
+//! // Full-refresh is a broadcast (see sysprop::ACTION_FULL_REFRESH_USER): from Java
+//! // call context.sendBroadcast(new Intent(ACTION_FULL_REFRESH_USER)); from a bare
+//! // native process, `am broadcast -a hanvon.intent.fullrefrsh.user`.
 //! sysprop::set_system_mode(Mode::PartGlr16);
 //! ```
 //!

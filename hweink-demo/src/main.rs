@@ -29,8 +29,15 @@ fn main() {
         "mode" => set_mode(args.get(2).map(|s| s.as_str())),
         "mode?" => print_mode(),
         "full" => {
-            hweink::sysprop::request_one_full_frame();
-            println!("requested one full frame (sys.ebook.one_full_mode_timeline++)");
+            // The demo is a bare native process (no Java Context), so it can't call
+            // Context.sendBroadcast. Fork `am` instead — fine for a one-shot CLI
+            // tool, NOT for an embedded library (use Java sendBroadcast there).
+            let _ = std::process::Command::new("am")
+                .args(["broadcast", "-a", hweink::sysprop::ACTION_FULL_REFRESH_USER])
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status();
+            println!("sent full-refresh broadcast ({})", hweink::sysprop::ACTION_FULL_REFRESH_USER);
         }
         "pen" => pen_loop(),
         "pen_iter" => pen_iter_loop(),
