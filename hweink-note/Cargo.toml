@@ -1,0 +1,12 @@
+[package]
+name = "hweink-note"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "hweink-note"
+path = "src/main.rs"
+
+[dependencies]
+hweink = { path = "../libhweink" }
+libc = { version = "0.2", default-features = false }

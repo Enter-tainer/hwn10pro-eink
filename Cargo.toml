@@ -1,5 +1,5 @@
 [workspace]
-members = ["libhweink", "hweink-demo"]
+members = ["libhweink", "hweink-demo", "hweink-note"]
 resolver = "2"
 
 [profile.release]
