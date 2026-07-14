@@ -27,10 +27,29 @@ use hweink::{
     Ebc,
 };
 use std::io::{self, Write};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 const EV_KEY: u16 = 0x0001;
 const KEY_F8: u16 = 0x02e8; // candidate: full refresh
 const KEY_F24: u16 = 0x02f4; // candidate: clear screen
+
+/// Set by the SIGINT/SIGTERM handler so the event loop can exit cleanly and run
+/// `Surface`'s `Drop` (which calls `DISABLE_OVERLAY`). Without this, Ctrl-C / `adb
+/// shell` kill would terminate the process without unwinding, leaving the OSD overlay
+/// enabled and the last drawing stuck on screen over every app.
+static EXIT: AtomicBool = AtomicBool::new(false);
+
+extern "C" fn on_signal(_sig: i32) {
+    EXIT.store(true, Ordering::SeqCst);
+}
+
+fn install_signal_handlers() {
+    unsafe {
+        for sig in [libc::SIGINT, libc::SIGTERM] {
+            libc::signal(sig, on_signal as usize);
+        }
+    }
+}
 
 /// Exponential moving average over raw pressure, so stroke width changes slowly
 /// instead of jittering on every pen sample. Damping 0.7 = fairly smooth.
@@ -101,6 +120,7 @@ fn main() {
 
     let mut pen = Pen::open().expect("open /dev/input/event2");
     let keys_fd = open_gpio_keys();
+    install_signal_handlers();
 
     let mut smoother = PressureSmoother::new();
     let mut last: Option<(i32, i32)> = None;
@@ -113,6 +133,10 @@ fn main() {
     println!("Any physical key press prints its code — tell me which button is which.");
 
     loop {
+        if EXIT.load(Ordering::SeqCst) {
+            break;
+        }
+
         // 1. Physical keys (non-blocking).
         if keys_fd >= 0 {
             drain_keys(keys_fd, |code, pressed| {
@@ -184,6 +208,15 @@ fn main() {
             }
         }
     }
+
+    // Explicitly drop the surface BEFORE process exit: Surface::Drop calls
+    // DISABLE_OVERLAY, which tears down the OSD layer so the drawing stops showing
+    // over every other app. (Rust's runtime already drops it, but being explicit +
+    // flushing stdout ensures the teardown actually happens before the process dies.)
+    let _ = writeln!(stdout.lock(), "exiting — disabling OSD overlay…");
+    let _ = io::stdout().flush();
+    drop(surf);
+    let _ = writeln!(stdout.lock(), "OSD overlay disabled. Bye.");
 }
 
 fn open_gpio_keys() -> i32 {
